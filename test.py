@@ -1,5 +1,6 @@
 #test python
 import os
+import yaml
 
 try:
 	from boxsdk import Client, OAuth2
@@ -17,10 +18,12 @@ CLIENT_SECRET = None
 ACCESS_TOKEN = None
 
 # Read app info from text file
-with open('app.cfg', 'r') as app_cfg:
-    CLIENT_ID = app_cfg.readline()
-    CLIENT_SECRET = app_cfg.readline()
-    ACCESS_TOKEN = app_cfg.readline()
+with open('app.yaml', 'r') as f:
+    config_file = yaml.safe_load(f)
+
+    CLIENT_ID = config_file['client_id']
+    CLIENT_SECRET = config_file['client_secret']
+    ACCESS_TOKEN = config_file['developer_token']
 	
 
 
@@ -57,26 +60,51 @@ client = Client(oauth2, LoggingNetwork())
 
 # Upload a file to Box, with Error handling for duplicate file names
 
-#file_path = os.path.normpath("C:/Users/Vishal/Desktop/get_response.csv")
+# file_path = os.path.normpath("C:/Users/Vishal/Desktop/get_response.csv")
 
-file_name = "get_response.csv"
+# file_name = "get_response.csv"
 
-from StringIO import StringIO
-stream = StringIO()
-stream.seek(0)
-from boxsdk.exception import BoxAPIException
-try:
-    box_file = client.folder('40972602395').upload_stream(stream, file_name, preflight_check=True)
-except BoxAPIException:
-    pass
+# from StringIO import StringIO
+# stream = StringIO()
+# stream.seek(0)
+# from boxsdk.exception import BoxAPIException
+# try:
+#     box_file = client.folder('40972602395').upload_stream(stream, file_name, preflight_check=True)
+# except BoxAPIException:
+#     pass
 
-# Get folder info
+#Get folder info
 
-# items = client.folder(folder_id='40972602395').get_items(limit=100, offset=0)
+#items = client.folder(folder_id='40972602395').get_items(limit=100, offset=0)
 
 
 
 #test folder
 #{"type":"folder","id":"40972602395","sequence_id":"0","etag":"0","name":"Insights Test Folder"}
 
+'''
+What should my program do?
+- Traverse through directory
+- Create a folder
+- Create a file
+- Access a file and copy locally
+- Pass through link for a file or folder? (did i come up with this or Jaymin suggested?)
 
+
+'''
+
+# from the os library, we need to use normpath for Window's file path, as well as replace "\" with "/"
+# right now i'm replacing slashes manually but I should just create another function to convert file paths
+
+def traverse_dir(path):
+    dir = []
+    dsp_path = os.path.normpath(path)
+    dir = os.listdir(dsp_path)
+
+    for file in dir:
+        print file
+
+# path for files can go in a config file too for each individual DSP Directory
+#for now this is for test
+path = ("C:/Users/Vishal Kumar/box_api_test/test_directory")
+traverse_dir(path)
