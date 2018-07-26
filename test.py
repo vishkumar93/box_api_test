@@ -1,6 +1,8 @@
 #test python
 import os
 import yaml
+import json
+import requests
 
 try:
 	from boxsdk import Client, OAuth2
@@ -50,6 +52,7 @@ class LoggingNetwork(DefaultNetwork):
 # Create OAuth2 object. It's already authenticated, thanks to the developer token.
 oauth2 = OAuth2(CLIENT_ID, CLIENT_SECRET, access_token=ACCESS_TOKEN)
 
+
 # Create the authenticated client
 client = Client(oauth2, LoggingNetwork())
 
@@ -59,6 +62,9 @@ client = Client(oauth2, LoggingNetwork())
 # Upload a file to Box! It works.
 
 # Upload a file to Box, with Error handling for duplicate file names
+# convert below into function that takes a filename and where it will be uploaded as a paramater, and returns status of uploaded file
+# have a root folder + base path + folder name for each DSP
+
 
 # file_path = os.path.normpath("C:/Users/Vishal/Desktop/get_response.csv")
 
@@ -74,29 +80,36 @@ client = Client(oauth2, LoggingNetwork())
 #     pass
 
 #Get folder info
-
-#items = client.folder(folder_id='40972602395').get_items(limit=100, offset=0)
-
+#we want to download file locally and return where we saved it
 
 
-#test folder
-#{"type":"folder","id":"40972602395","sequence_id":"0","etag":"0","name":"Insights Test Folder"}
-
-'''
-What should my program do?
-- Traverse through directory
-- Create a folder
-- Create a file
-- Access a file and copy locally
-- Pass through link for a file or folder? (did i come up with this or Jaymin suggested?)
+writeable_stream
 
 
-'''
 
-# from the os library, we need to use normpath for Window's file path, as well as replace "\" with "/"
+
+dsp_rev_root = client.folder(folder_id = '40299062100').get()
+
+shared_link = dsp_rev_root.get_shared_link_d
+
+print shared_link
+
+#download DSP file
+# def dsp_folder_path(path,dsp_name):
+#     dsp_root = client.folder(path['name'] + dsp_name
+
+
+
+#root path for DSP files
+root_path = os.path.normpath("C:/Users/Vishal Kumar/Box Sync/Insights/IAS Insights/Internal Deliverables/DSP Revenue/DSP Revenue Files/")
+
+#move an item - i want to move from box to local
+#client.file(file_id='SOME_FILE_ID').move(client.folder(folder_id='SOME_FOLDER_ID'))
+
+# from the os library, we need to use normpath for Window's file path, as well as replace "/" with "/"
 # right now i'm replacing slashes manually but I should just create another function to convert file paths
 
-def traverse_dir(path):
+def traverse_local_dir(path):
     dir = []
     dsp_path = os.path.normpath(path)
     dir = os.listdir(dsp_path)
@@ -106,5 +119,8 @@ def traverse_dir(path):
 
 # path for files can go in a config file too for each individual DSP Directory
 #for now this is for test
-path = ("C:/Users/Vishal Kumar/box_api_test/test_directory")
-traverse_dir(path)
+# path = ("C:/Users/Vishal Kumar/box_api_test/test_directory")
+# traverse_local_dir(path)
+
+
+
