@@ -85,9 +85,6 @@ client = Client(oauth2, LoggingNetwork())
 
 writeable_stream
 
-
-
-
 dsp_rev_root = client.folder(folder_id = '40299062100').get()
 
 shared_link = dsp_rev_root.get_shared_link_d
