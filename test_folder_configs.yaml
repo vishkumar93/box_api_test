@@ -1,0 +1,8 @@
+#THIS CONFIG IS FOR C:\Users\Vishal Kumar\Box Sync\Insights\IAS Insights\Master\DSP Tracker\Box API Test VK
+
+#root DSP folder (DSP Revenue Files)
+dsp_root_folder: 0
+#Specific DSP Root Folders
+Adelphic Test: 51939190251
+DBM Test: 51939231352
+TTD Test: 51940064045
