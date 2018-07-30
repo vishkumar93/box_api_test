@@ -32,7 +32,7 @@ Code:
         
 2) main_func: Contains same code as above, but stores all completed functions, highlighted below:
  
-3) main_func include the upload_file function:
+3) main_func includes the upload_file function:
 
         def upload_file(name,folder_id):
                 #root path of files 
