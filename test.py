@@ -59,13 +59,8 @@ client = Client(oauth2)
 # Set upload values
 
 
-#file_name is a parameter in the Box SDK for upload(), but it is must be left blank to ensure proper upload
-#giving a file name will alter file extension, which we donot want
 
 
-def upload_file(name,folder_id):
-	path = 'C:/Users/Vishal Kumar/box_api_test/test_directory/'
-	file_path = path + name
-	box_file = client.folder(folder_id).upload(file_path)
+
 
 
