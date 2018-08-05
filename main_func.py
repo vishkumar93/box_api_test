@@ -55,7 +55,7 @@ def search_box():
 
 # Gets all items in a folder and prints folder IDs which are stored in text doc (root: '40299062100')
 
-def get_all_items_in_folder(id):
+def get_all_items_in_folder_to_txt(id):
 	#gets all items
 	root_folder_items = client.folder(folder_id=id).get_items(limit=100, offset=0)
 
@@ -67,6 +67,14 @@ def get_all_items_in_folder(id):
 			f.write(x[14:] + '\n')
 			
 		f.close()
+
+#Get all items in folder, I used this for file ids to download
+
+def get_all_items_in_folder(id):
+	#gets all items
+	root_folder_items = client.folder(folder_id=id).get_items(limit=100, offset=0)
+
+	return root_folder_items
 
 
 # Read folder IDs from folder_configs (this needs to mantained manually)
@@ -107,8 +115,13 @@ def upload_file(name,folder_id):
 	box_file = client.folder(folder_id).upload(file_path)
 
 
+#file id and path is stored in config
+#need to figure out a way to parse file ids from folder and pass into parameter
+def download_dsp_file(id,path):
+	with open (path, 'wb' ) as local_file:
+		client.file(file_id=id).download_to(local_file)
+		local_file.close()
 #Type function you want to use here
-
 
 
 
