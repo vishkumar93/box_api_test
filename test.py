@@ -62,15 +62,6 @@ client = Client(oauth2)
 
 
 
-def get_file_ids_from_folder_id(folder_id):
-	dbm_items = func.get_all_items_in_folder(folder_id)
-
-	for file in dbm_items:
-		new_file = str(file).split(' ',4) #limit split to 5
-		
-		break #i just want to download 1 for testing
-
-	return new_file[3] #file id is 3rd object
 
 
 # file = 'C:/Python27/blank.csv'
@@ -78,19 +69,6 @@ def get_file_ids_from_folder_id(folder_id):
 
 
 
+output = func.get_file_ids_from_folder_id(40299062100)
 
-# content() returns file as bytes 
-file_contents = client.file(file_id='308172857070').content()
-
-
-
-
-#file id and path is stored in config
-#need to figure out a way to parse file ids from folder and pass into parameter
-def download_dsp_file(id,path):
-	with open (path, 'wb' ) as local_file:
-		client.file(file_id=id).download_to(local_file)
-		local_file.close()
-
-
-download_dsp_file(308172857070,'C:\\Python27\\new.xlsx')
+print output['RadiumOne']

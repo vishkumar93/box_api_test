@@ -34,12 +34,10 @@ client = Client(oauth2)
 
 
 # function takes folder id, client object, and prints folder info
-
+# get_folder_info('40299062100',client) #40299062100 = folder ID for DSP Revenue Files
 def get_folder_info(id,client):
 	dsp_rev_root = client.folder(folder_id = id).get()
 	print dsp_rev_root
-
-# get_folder_info('40299062100',client) #40299062100 = folder ID for DSP Revenue Files
 
 # Below function lets user search for a keyword and then return list of values for either file or folder
 
@@ -76,6 +74,38 @@ def get_all_items_in_folder(id):
 
 	return root_folder_items
 
+#can be used to retrieve folder or file ids from directory. requires a folder id
+
+
+def clean_file_name(file):
+
+	unwanted_chars = ['(',')','>','<']
+	#remove unwanted characters
+	for char in unwanted_chars:
+		if char in file:
+			file = file.replace(char,'')
+
+	return file
+
+
+def get_file_ids_from_folder_id(folder_id):
+
+	items_to_iterate = get_all_items_in_folder(folder_id)
+	items_list = {}
+	#unwanted characters
+	unwanted_chars = ['(',')','>','<']
+
+	#split file data up
+	#create a dict for each item name as key, item id as value
+	for file in items_to_iterate :
+		new_file = str(file).split(' ',4) #limit split to 5
+		file_id = new_file[3]
+		folder_name = new_file[4]
+		#remove unwanted characters
+		folder_name = clean_file_name(folder_name)
+		items_list[folder_name] = file_id
+
+	return items_list
 
 # Read folder IDs from folder_configs (this needs to mantained manually)
 
@@ -117,10 +147,12 @@ def upload_file(name,folder_id):
 
 #file id and path is stored in config
 #need to figure out a way to parse file ids from folder and pass into parameter
+#sample adform file: 308172857070
+#sample path: 
 def download_dsp_file(id,path):
 	with open (path, 'wb' ) as local_file:
 		client.file(file_id=id).download_to(local_file)
-		local_file.close()
+
 #Type function you want to use here
 
 
