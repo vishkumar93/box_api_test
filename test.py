@@ -2,7 +2,6 @@
 
 import os
 import yaml
-import json
 import requests
 import main_func as func
 from StringIO import StringIO
@@ -90,60 +89,36 @@ download_file() using the list from the get_folder_ids_from_config() func, we ca
 get_file_names() needs to be combined with download. If file name matches names in get_files_names, then download!
 '''
 
-
-def get_file_names_and_download(dsp_name,requested_file_name):
+def upload_file(dsp_name,name):
 	'''
-	This function is a modification of get_file_names() as it stores file names in a list
-	Important: The requested file name MUST include the file extension
-	params: dsp name is the folder and requested_file_name is the file to be downloaded
-	returns: names of files in folder
-	Sample Folder ID for Adelphic: 40299155116 
-	'''
-	#read folder ids from config file and returns folder_dict
+	Takes dsp_name, which is the folder we want to upload to, and the name of the file we want to upload
+	Please ensure that the name of the upload file includes extension, such as .xlsx or .csv
+	Utilizes get_folder_ids_from_config() and the folder_configs.yaml
 
+	'''
+
+	#read folder folder configuration file
 	folder_dict = func.get_folder_ids_from_config()
 
-	#perform a check to enforce that folder exists before moving on with function
+	#try except to check if folder exists and then assigns folder id to variable
 	try:
 		print 'The folder requested exists with folder id: %s' %folder_dict[dsp_name]
 		id = folder_dict[dsp_name]
 	except:
 		print 'DSP folder does not exist in Box or folder_configs.yaml'
 
-	file_name_list = {}
+	#root path of files to be uploaded
+	local_path = 'C:/Users/Vishal Kumar/box_api_test/test_directory/'
 
-	root_folder_items = client.folder(folder_id=id).get_items(limit=100, offset=0)
+	#full file path includes above path and file name appended
+	#giving a file name will alter file extension, which we do not want
+	file_path = local_path + name
 
-	for item in root_folder_items:
-		type = client.file(file_id=item['type'])
-		if str(type) != '<Box File - folder>':
-			#line below gets file name
-			name = client.file(file_id=item['id']).get()['name']
-			file_id = client.file(file_id=item['id']).get()['id']
-			file_name_list[name] = file_id
-			
+	#NOTE: file_name is a parameter in the Box SDK for upload(), but it is must be left blank to ensure proper upload
+	#Which folder should this file be uploaded to?
+	#TODO: add a try except to catch if file exists. Box has a specific error for this.
+	box_file = client.folder(id).upload(file_path)
 
-	#file names stored as key, value pair and below code checks if name exists
-	if requested_file_name in file_name_list:
-		'''
-		If the file exists, it will be downloaded. 
-		The download directory is set in the download_file() func
-		'''
-		print '%s exists and can be downloaded' %requested_file_name
-		print '...file is being downloaded'
-		func.download_file(file_name_list[requested_file_name])
-	else:
-		print 'File does not exist in folder. Please check naming convention to confirm'
+	print 'File %s has been uploaded to Box in %s!' % (name, dsp_name)
 
-
-get_file_names_and_download('Adelphic','Adelphic 2016-12.xlsx')
-
-
-'''
-Sample ID for Adelphic: 40299155116
-
-def file_exists_check()
-	
-	for file in folder id:
-		get file name
-'''
+upload_file('DBM Test','Test - Dummy File.xlsx')
