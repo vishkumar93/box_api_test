@@ -2,7 +2,6 @@
 
 import os
 import yaml
-import json
 import requests
 from StringIO import StringIO
 from datetime import datetime
@@ -140,7 +139,10 @@ def check_dsp_main():
 	check_dsp_name('RadiumOne')
 
 
-def upload_file(name,folder_id):
+def upload_file_simple(name,folder_id):
+	'''
+	General template for uploading files from local directory to box
+	'''
 	#root path of files 
 	path = 'C:/Users/Vishal Kumar/box_api_test/test_directory/'
 	#full file path includes above path and file name appended
@@ -228,20 +230,20 @@ def get_dsp_file_create_dates(id):
 		return max(date_times_list)
 
 
+#this is a success. we can further improve by entering parameters via command line...do some research later. Not urgent but will be useful.
 def get_file_names_and_download(dsp_name,requested_file_name):
 	'''
-	This function is a modification of get_file_names() as it stores file names and ids in a dict
-	It also verifies that DSP Folder exists and that the file exists. If both checks pass, the file is downloaded
+	This function is a modification of get_file_names() as it stores file names in a list
+	Utilizes these function: get_folder_ids_from_config() and download_file()
 	Important: The requested file name MUST include the file extension
 	params: dsp name is the folder and requested_file_name is the file to be downloaded
 	returns: names of files in folder
 	Sample Folder ID for Adelphic: 40299155116 
 	'''
 	#read folder ids from config file and returns folder_dict
-
 	folder_dict = func.get_folder_ids_from_config()
 
-	#perform a check to enforce that folder exists before moving on with function
+	#try except to check if folder exists and then assigns folder id to variable
 	try:
 		print 'The folder requested exists with folder id: %s' %folder_dict[dsp_name]
 		id = folder_dict[dsp_name]
@@ -250,6 +252,7 @@ def get_file_names_and_download(dsp_name,requested_file_name):
 
 	file_name_list = {}
 
+	#
 	root_folder_items = client.folder(folder_id=id).get_items(limit=100, offset=0)
 
 	for item in root_folder_items:
@@ -272,6 +275,37 @@ def get_file_names_and_download(dsp_name,requested_file_name):
 		func.download_file(file_name_list[requested_file_name])
 	else:
 		print 'File does not exist in folder. Please check naming convention to confirm'
+
+
+def upload_file(dsp_name,name):
+	'''
+	Takes dsp_name, which is the folder we want to upload to, and the name of the file we want to upload
+	Please ensure that the name of the upload file includes extension, such as .xlsx or .csv
+	Utilizes get_folder_ids_from_config() and the folder_configs.yaml
+
+	'''
+
+	#read folder folder configuration file
+	folder_dict = func.get_folder_ids_from_config()
+
+	#try except to check if folder exists and then assigns folder id to variable
+	try:
+		print 'The folder requested exists with folder id: %s' %folder_dict[dsp_name]
+		id = folder_dict[dsp_name]
+	except:
+		print 'DSP folder does not exist in Box or folder_configs.yaml'
+
+	#root path of files to be uploaded
+	local_path = 'C:/Users/Vishal Kumar/box_api_test/test_directory/'
+
+	#full file path includes above path and file name appended
+	#giving a file name will alter file extension, which we do not want
+	file_path = local_path + name
+
+	#NOTE: file_name is a parameter in the Box SDK for upload(), but it is must be left blank to ensure proper upload
+	#Which folder should this file be uploaded to?
+
+	box_file = client.folder(id).upload(file_path)
 
 #Type function you want to use here
 
