@@ -1,6 +1,7 @@
 ############################################################### LIBRARIES ###############################################################
 
 import os
+import sys
 import yaml
 import requests
 import main_func as func
@@ -89,46 +90,74 @@ download_file() using the list from the get_folder_ids_from_config() func, we ca
 get_file_names() needs to be combined with download. If file name matches names in get_files_names, then download!
 '''
 
+def path_exits(file_path):
+	local_file_exist_bool = os.path.exists(file_path)
+	return local_file_exist_bool
+
+def search_box_for_id(folder_name):
+	'''
+	Below function lets user search for a keyword and then return list of values for either file or folder
+	returns id
+	#TODO: note for future development, add a check that these folders are under the root of DSP Files so that any duplicates are prevented
+	'''
+	limit=1
+	offset=0
+	type = 'Folder'
+	
+	content = client.search(folder_name, result_type=type, limit=limit, offset=offset)
+	#Check in place for content, which is a list. If this is empty, no folders for the desired DSP will be found
+	if not content:
+		print 'No folders found'
+		return None
+	else:
+		for item in content:
+			folder_id = client.folder(folder_id=item['id']).get()['id']
+			# dsp_id = client.folder(folder_id=item['id'])
+			# print dsp_id['name']
+	
+		return folder_id
 
 
-
-
-
-def upload_file(dsp_name,name):
+def upload_file(dsp_name,file_path):
 	'''
 	Takes dsp_name, which is the folder we want to upload to, and the name of the file we want to upload
 	Please ensure that the name of the upload file includes extension, such as .xlsx or .csv
 	Utilizes get_folder_ids_from_config() and the folder_configs.yaml
 
 	'''
+	#check if file exists
+	#path_exits(file_path)
+	if path_exits(file_path) is True:
+		print "You have entered a valid file path. Script will continue."
+		print "...."
+	else:
+		print "File does not exist. Script shutting down."
+		sys.exit()
 
-	#read folder folder configuration file
-	folder_dict = func.get_folder_ids_from_config()
-
-	#try except to check if folder exists and then assigns folder id to variable
-	try:
-		print 'The folder requested exists with folder id: %s' %folder_dict[dsp_name]
-		id = folder_dict[dsp_name]
-	except:
-		print 'DSP folder does not exist in Box or folder_configs.yaml'
-
-	#root path of files to be uploaded
-	#TODO: take fully qualified file name that includes local path and file name
-	#	   add a try/except if local file exists
-	local_path = 'C:/Users/Vishal Kumar/box_api_test/test_directory/'
-
-	#full file path includes above path and file name appended
-	#giving a file name will alter file extension, which we do not want
-	file_path = local_path + name
+	'''
+	Replacing below two lines with search_box_for_id(folder_name)
+			read folder configuration file
+			folder_dict = func.get_folder_ids_from_config()
+	search_box_for_id() returns None if no folder was found, and a folder_id if folder was found
+	'''
+	if search_box_for_id(dsp_name) is not None:
+		folder_id = search_box_for_id(dsp_name)
+		print 'Destination folder requested exists with folder id: %s' %folder_id
+		print '....'
+	else:
+		print 'Destination Folder does not exist. Script shutting down.'
 
 	#NOTE: file_name is a parameter in the Box SDK for upload(), but it is must be left blank to ensure proper upload
-	#Which folder should this file be uploaded to?
-	#TODO: add a try except to catch if file exists. Box has a specific error for this.
-	box_file = client.folder(id).upload(file_path)
+	try:
+		box_file = client.folder(folder_id).upload(file_path)
+		print 'File %s has been uploaded to Box in %s!' % (file_path, dsp_name)
+	#TODO: find a way to overwrite differently. For now we can delete the file.
+	except BoxAPIException:
+		print 'File already exists. Upload with new file name and run script again.'
 
-	#TODO: Add a check for duplicate file to flag it, option to overwrite possibly?
 
-	print 'File %s has been uploaded to Box in %s!' % (name, dsp_name)
+#dummy path for PC with backslash converted: C:/Users/Vishal Kumar/box_api_test/test_directory/Test - Dummy File.xlsx
+#upload_file('DBM Test','C:/Users/Vishal Kumar/box_api_test/test_directory/Test - Dummy File.xlsx')
 
 #below function 
 def get_file_names_and_download(dsp_name,requested_file_name):
@@ -140,31 +169,25 @@ def get_file_names_and_download(dsp_name,requested_file_name):
 	returns: names of files in folder
 	Sample Folder ID for Adelphic: 40299155116 
 	'''
-	#read folder ids from config file and returns folder_dict
-	folder_dict = func.get_folder_ids_from_config()
+	if search_box_for_id(dsp_name) is not None:
+		folder_id = search_box_for_id(dsp_name)
+		print 'Destination folder requested exists with folder id: %s' %folder_id
+		print '....'
+	else:
+		print 'Destination Folder does not exist. Script shutting down.'
 
-	#try except to check if folder exists and then assigns folder id to variable
-	try:
-		print 'The folder requested exists with folder id: %s' %folder_dict[dsp_name]
-		id = folder_dict[dsp_name]
-	except:
-		print 'DSP folder does not exist in Box or folder_configs.yaml'
+	root_folder_items = client.folder(folder_id=folder_id).get_items(limit=100, offset=0)
 
 	file_name_list = {}
-
-	#
-	root_folder_items = client.folder(folder_id=id).get_items(limit=100, offset=0)
 
 	for item in root_folder_items:
 		type = client.file(file_id=item['type'])
 		if str(type) != '<Box File - folder>':
 			#line below gets file name
-			#TODO: try to verify if the requested file exists here instead of lines 171/172
 			name = client.file(file_id=item['id']).get()['name']
 			file_id = client.file(file_id=item['id']).get()['id']
 			file_name_list[name] = file_id
 			
-
 	#file names stored as key, value pair and below code checks if name exists
 	if requested_file_name in file_name_list:
 		'''
@@ -183,23 +206,27 @@ def get_file_names_and_download(dsp_name,requested_file_name):
 #download function: takes file name,returns the path of where you stored the file
 #					break down into two functions: get list of files, download
 
-#before calling these functions - inside the function we want to verify if source file, destination file exists
+#before calling these functions - inside the function we want to verify if source file/destination file exists
 
-def search_box_for_id(folder_name):
-	'''
-	Below function lets user search for a keyword and then return list of values for either file or folder
-	returns id
-	#TODO: note for future development, add a check that these folders are under the root of DSP Files so that any duplicates are prevented
-	'''
-	limit=1
-	offset=0
-	type = 'Folder'
-	content = client.search(folder_name, result_type=type, limit=limit, offset=offset)
-	for item in content:
-		folder_id = client.folder(folder_id=item['id']).get()['id']
-		# dsp_id = client.folder(folder_id=item['id'])
-		# print dsp_id['name']
-	
-	return folder_id
+#get_file_names_and_download('DBM Test','Test - Dummy File.xlsx')
 
-print search_box_for_id('Hotmob')
+def download_file(id):
+	'''
+	takes in file id and downloads file to given path
+	sample adform file:308172857070
+	'''
+	stream = StringIO()
+	stream.seek(0)
+
+	# Download the file's contents from Box# 
+	box_file = client.file(file_id=id).get()
+	file_name = client.file(file_id=id).get()['name']
+	my_file = box_file.content()
+	stream.write(my_file)
+	#path below can be changed to variable
+	with open('C:/Users/Vishal Kumar/box_api_test/test_directory/' + file_name, 'wb') as f:
+			f.write(my_file)
+
+	return f
+
+get_file_names_and_download('DBM Test','Test - Dummy File.xlsx')

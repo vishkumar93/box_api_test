@@ -307,6 +307,23 @@ def upload_file(dsp_name,name):
 
 	box_file = client.folder(id).upload(file_path)
 
+def search_box_for_id(folder_name):
+	'''
+	Below function lets user search for a keyword and then return list of values for either file or folder
+	returns id
+	#TODO: note for future development, add a check that these folders are under the root of DSP Files so that any duplicates are prevented
+	'''
+	limit=1
+	offset=0
+	type = 'Folder'
+	content = client.search(folder_name, result_type=type, limit=limit, offset=offset)
+	for item in content:
+		folder_id = client.folder(folder_id=item['id']).get()['id']
+		# dsp_id = client.folder(folder_id=item['id'])
+		# print dsp_id['name']
+	
+	return folder_id
+
 #Type function you want to use here
 
 
