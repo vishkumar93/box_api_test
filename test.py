@@ -159,11 +159,11 @@ def upload_file(dsp_name,file_path):
 #dummy path for PC with backslash converted: C:/Users/Vishal Kumar/box_api_test/test_directory/Test - Dummy File.xlsx
 #upload_file('DBM Test','C:/Users/Vishal Kumar/box_api_test/test_directory/Test - Dummy File.xlsx')
 
-#below function 
-def get_file_names_and_download(dsp_name,requested_file_name):
+#below function gets the file name and calls the download function
+def get_file_name_and_download(dsp_name,requested_file_name):
 	'''
 	This function is a modification of get_file_names() as it stores file names in a list
-	Utilizes these function: get_folder_ids_from_config() and download_file()
+	Utilizes these function: get_folder_ids_from_config(),download_file(), search_box_for_id()
 	Important: The requested file name MUST include the file extension
 	params: dsp name is the folder and requested_file_name is the file to be downloaded
 	returns: names of files in folder

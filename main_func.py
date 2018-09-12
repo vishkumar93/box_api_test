@@ -32,7 +32,10 @@ client = Client(oauth2)
 
 ############################################################### WORKING FUNCTIONS ###############################################################
 
-
+def path_exits(file_path):
+	local_file_exist_bool = os.path.exists(file_path)
+	return local_file_exist_bool
+	
 def get_folder_info(id,client):
 	'''
 	function takes folder id, client object, and prints folder info
@@ -169,9 +172,11 @@ def get_file_names(id):
 			name = client.file(file_id=item['id']).get()['name']
 			print 'Name: %s' %name
 
-def download_file(id):
+
+def download_file(id,save_path='C:/Users/Vishal Kumar/box_api_test/test_directory/'):
 	'''
 	takes in file id and downloads file to given path
+	checks to see if file already exists in local path where it is to be downloaded
 	sample adform file:308172857070
 	'''
 	stream = StringIO()
@@ -183,8 +188,16 @@ def download_file(id):
 	my_file = box_file.content()
 	stream.write(my_file)
 	#path below can be changed to variable
-	with open('C:/Users/Vishal Kumar/box_api_test/test_directory/' + file_name, 'wb') as f:
-		f.write(my_file)
+	with open(save_path + file_name, 'wb') as f:
+		new_save_path = save_path + file_name
+		if path_exits(new_save_path) is True:
+			print "This file already exists in the designated directory"
+		else:
+			f.write(my_file)
+			print 'File is being downloaded to %s' %new_save_path
+
+	return new_save_path
+
 
 def get_dsp_files_search():
 	'''
